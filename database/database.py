@@ -4,11 +4,10 @@ Interact with the database
 from collections import Iterator
 from contextlib import contextmanager
 from datetime import datetime
-from os import getenv
 from typing import List, Tuple, Optional
 
-import psycopg3
-from psycopg3 import Transaction
+import psycopg
+from psycopg import Transaction
 
 from ade import Classroom, Instructor, Unite, Event
 from ade.elements import Activity
@@ -16,8 +15,8 @@ from ade.elements import Activity
 
 class Database:
     """Interact with the data and the database"""
-    connection: psycopg3.Connection
-    cursor: psycopg3.Cursor
+    connection: psycopg.Connection
+    cursor: psycopg.Cursor
 
     """Abstraction around psycopg3 to interact with data"""
 
@@ -27,7 +26,7 @@ class Database:
 
         :param conn: database connection information
         """
-        self.connection = psycopg3.connect(**conn)
+        self.connection = psycopg.connect(**conn)
         self.cursor = self.connection.cursor()
 
     @contextmanager
