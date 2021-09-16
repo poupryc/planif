@@ -21,15 +21,13 @@ class Database:
 
     """Abstraction around psycopg3 to interact with data"""
 
-    def __init__(self):
-        infos = dict(
-            host=getenv("POSTGRES_HOST"),
-            dbname=getenv("POSTGRES_DBNAME"),
-            user=getenv("POSTGRES_USER"),
-            password=getenv("POSTGRES_PASSWORD")
-        )
+    def __init__(self, **conn):
+        """
+        Instantiate a new database connection
 
-        self.connection = psycopg3.connect(**infos)
+        :param conn: database connection information
+        """
+        self.connection = psycopg3.connect(**conn)
         self.cursor = self.connection.cursor()
 
     @contextmanager

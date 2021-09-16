@@ -49,7 +49,13 @@ activities = []
 for activity in raw_activities:
     activities.append(Activity.from_element(activity))
 
-database = Database()
+database = Database(
+    host=getenv("POSTGRES_HOST"),
+    dbname=getenv("POSTGRES_DBNAME"),
+    user=getenv("POSTGRES_USER"),
+    password=getenv("POSTGRES_PASSWORD")
+)
+
 with database.transaction():
     print("> Clean existing tables...")
     database.clean()
