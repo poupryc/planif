@@ -33,16 +33,6 @@ CREATE TABLE IF NOT EXISTS events
     unite_id    INTEGER REFERENCES unites (id)
 );
 
--- DO NOT EXECUTE
--- CREATE TEMPORARY TABLE IF NOT EXISTS activities_temp
--- (
---     id INTEGER PRIMARY KEY,
---     description TEXT,
---     category TEXT,
---     info TEXT
--- );
-
-
 CREATE TABLE IF NOT EXISTS events_classrooms
 (
     event_id     INTEGER REFERENCES events (id),
@@ -57,4 +47,11 @@ CREATE TABLE IF NOT EXISTS events_instructors
     PRIMARY KEY (event_id, instructor_id)
 );
 
-
+-- DO NOT EXECUTE
+-- CREATE TEMPORARY TABLE IF NOT EXISTS activities_temp
+-- (
+--     id INTEGER PRIMARY KEY,
+--     description TEXT,
+--     category TEXT,
+--     info TEXT
+-- );

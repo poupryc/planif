@@ -158,10 +158,6 @@ class ADEClient:
         if len(response.content) == 0:
             raise ConnectionError("The response seems to be empty. Maybe the function used is unknown for ADE?")
 
-        if params["function"] == "getActivities":
-            with open("activities.xml", "w") as file:
-                file.write(response.text)
-
         element = ET.fromstring(response.text)
 
         # ADE responds with a 200 even in case of failure, with the only. The error message will be in the response XML.
