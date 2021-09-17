@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS unites
     id     INTEGER PRIMARY KEY,
     name   TEXT NOT NULL,
     code   TEXT NOT NULL,
+    label  TEXT,
     branch TEXT NOT NULL
 );
 
@@ -48,10 +49,19 @@ CREATE TABLE IF NOT EXISTS events_instructors
 );
 
 -- DO NOT EXECUTE
+-- TEMPORARY TABLE CODE FOR activities
 -- CREATE TEMPORARY TABLE IF NOT EXISTS activities_temp
 -- (
 --     id INTEGER PRIMARY KEY,
 --     description TEXT,
 --     category TEXT,
 --     info TEXT
+-- );
+
+-- DO NOT EXECUTE
+-- TEMPORARY TABLE CODE FOR aurion_unites
+-- CREATE TEMPORARY TABLE IF NOT EXISTS aurion_unites_temp
+-- (
+--     code TEXT,
+--     label TEXT
 -- );

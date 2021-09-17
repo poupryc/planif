@@ -7,24 +7,40 @@ from dotenv import load_dotenv
 
 from ade import ADEClient, Category, Classroom, Unite, Instructor, Event
 from ade.elements import Activity
+from aurion import AurionClient
 from database import Database
 
 load_dotenv()
 
-client = ADEClient(url=getenv("ADE_URL"), login=getenv("ADE_LOGIN"), password=getenv("ADE_PASSWORD"))
+ade = ADEClient(
+    url=getenv("ADE_URL"),
+    login=getenv("ADE_LOGIN"),
+    password=getenv("ADE_PASSWORD")
+)
+
+aurion = AurionClient(
+    url=getenv("AURION_URL"),
+    login=getenv("AURION_LOGIN"),
+    password=getenv("AURION_PASSWORD"),
+    database=getenv("AURION_DATABASE")
+)
+
 print("> Connection to ADE...")
-client.connect()
-client.set_project(getenv("ADE_PROJECT_ID"))
+ade.connect()
+ade.set_project(getenv("ADE_PROJECT_ID"))
 print("> Connected", end="\n\n")
 
 print("> Fetching resources from ADE... (1/3)")
-raw_resources = client.get_resources()
+raw_resources = ade.get_resources()
 
 print("> Fetching events from ADE... (2/3)")
-raw_events = client.get_events()
+raw_events = ade.get_events()
 
 print("> Fetching activities from ADE... (3/3)", end="\n\n")
-raw_activities = client.get_activities()
+raw_activities = ade.get_activities()
+
+print("> Fetching unite data from Aurion... (1/2)", end="\n\n")
+aurion_unites = aurion.retrieve_unites()
 
 print("> Analyzing resources...")
 classrooms = []
@@ -32,11 +48,15 @@ instructors = []
 unites = []
 for resource in raw_resources.iter(tag="resource"):
     category = resource.get("category")
+
+    if resource.get("isGroup") != "false":
+        continue
+
     if category == Category.CLASSROOM:
         classrooms.append(Classroom.from_element(resource))
     elif category == Category.UNITE:
         unites.append(Unite.from_element(resource))
-    elif category == Category.INSTRUCTOR and resource.get("isGroup") == "false":
+    elif category == Category.INSTRUCTOR:
         instructors.append(Instructor.from_element(resource))
 
 print("> Analyzing events...")
@@ -61,16 +81,18 @@ with database.transaction():
     database.clean()
 
     # populate resources tables
-    print("> Populate resources tables")
+    print("> Populate resources tables...")
     database.populate_classrooms(classrooms)
     database.populate_instructors(instructors)
-    database.populate_unites(unites)
+    database.populate_unites(unites, aurion_unites)
 
     # populate events
-    print("> Populate events tables")
+    print("> Populate events tables...")
     database.populate_events(events)
 
     # update events with activities
     database.populate_activities(activities)
+
+    print("> End")
 
 database.close()

@@ -108,10 +108,11 @@ class Trainee:
 @dataclass
 class Unite:
     """An Unite can be a subject or a set of subjects chosen for their coherence in this set"""
-    id: int
-    name: str
-    code: Optional[str]
+    id: Optional[int]
+    name: Optional[str]
+    code: str
     branch: Optional[str]
+    label: Optional[str] = field(default=None)
 
     @classmethod
     def from_element(cls, element: Element) -> "Unite":

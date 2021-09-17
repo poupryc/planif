@@ -57,7 +57,7 @@ class ADEClient:
 
         return self.sessionId
 
-    def get_projects(self, detail=1, **params):
+    def get_projects(self, detail=4, **params):
         """
         Get the list of the ADE projects
 

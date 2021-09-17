@@ -3,14 +3,12 @@ Interact with the database
 """
 from collections import Iterator
 from contextlib import contextmanager
-from datetime import datetime
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 import psycopg
 from psycopg import Transaction
 
 from ade import Classroom, Instructor, Unite, Event
-from ade.elements import Activity
 
 
 class Database:
@@ -77,25 +75,41 @@ class Database:
             for instructor in instructors:
                 copy.write_row(extract(instructor))
 
-    def populate_unites(self, unites: List[Unite]):
+    def populate_unites(self, unites: List[Unite], aurion: List[Unite]):
         """
          Populate unite table into the database
 
-         :param unites: list of unites to be added
+         :param unites: list of unites from ADE to be added
+         :param aurion: data from Aurion
          """
         unites_copy = "COPY unites (id, name, code, branch) FROM STDIN"
 
-        def extract(item: Unite) -> Tuple[int, str, str, str]:
-            """
-            Extract the tuple of data to insert in the database
-            :param item: the unite to be used
-            :return: the tuple of data
-            """
-            return item.id, item.name, item.code, item.branch
-
         with self.cursor.copy(unites_copy) as copy:
             for unite in unites:
-                copy.write_row(extract(unite))
+                data = (unite.id, unite.name, unite.code, unite.branch)
+                copy.write_row(data)
+
+        self.cursor.execute("""
+            CREATE TEMPORARY TABLE IF NOT EXISTS aurion_unites_temp
+            (
+                code    TEXT,
+                label   TEXT
+            );
+        """)
+
+        aurion_unites_copy = "COPY aurion_unites_temp (code, label) FROM STDIN"
+
+        with self.cursor.copy(aurion_unites_copy) as copy:
+            for unite in aurion:
+                data = (unite.code, unite.label)
+                copy.write_row(data)
+
+        self.cursor.execute("""
+            UPDATE unites
+                SET label = unite.label
+                FROM aurion_unites_temp AS unite
+                WHERE unites.code = unite.code
+        """)
 
     def populate_events(self, events: List[Event]):
         """
@@ -103,21 +117,14 @@ class Database:
 
          :param events: list of unites to be added
          """
-
         events_copy = "COPY events (id, activity_id, name, start_at, end_at, unite_id) FROM STDIN"
-
-        def extract_event(item: Event) -> tuple[int, int, str, datetime, datetime, Optional[int]]:
-            """
-            Extract the tuple of data to insert in the database
-            :param item: the unite to be used
-            :return: the tuple of data
-            """
-            return item.id, item.activity_id, item.name, item.start_at, item.end_at, getattr(item.unite, "id", None)
 
         # we populate the "events" table with the specific data
         with self.cursor.copy(events_copy) as copy:
             for event in events:
-                copy.write_row(extract_event(event))
+                data = (event.id, event.activity_id, event.name, event.start_at, event.end_at,
+                        getattr(event.unite, "id", None))
+                copy.write_row(data)
 
         # then we introduce the relation to the others data
         # we populate the table "events_classrooms", as this is a many-to-many relation
@@ -161,17 +168,10 @@ class Database:
 
         activities_sql = "COPY activities_temp (id, description, category, info) FROM STDIN"
 
-        def extract(item: Activity) -> tuple[int, str, str, str]:
-            """
-            Extract the tuple of data to insert in the database
-            :param item: the activity to be used
-            :return: the tuple of data
-            """
-            return item.id, item.description, item.category, item.info
-
         with self.cursor.copy(activities_sql) as copy:
             for activity in activities:
-                copy.write_row(extract(activity))
+                data = (activity.id, activity.description, activity.category, activity.info)
+                copy.write_row(data)
 
         # we must remember that ADE gives us the following guarantee
         # - an event necessarily has an associated activity
