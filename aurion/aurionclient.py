@@ -4,9 +4,11 @@ Interacts with the Web Aurion API.
 This API is not publicly available. It depends on requests specified by the administrator of your instance and an
 account with special permissions.
 """
-import requests
 # noinspection PyPep8Naming
 import xml.etree.ElementTree as ET
+
+import requests
+
 from ade.elements import Unite
 
 
