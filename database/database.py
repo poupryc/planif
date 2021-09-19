@@ -85,7 +85,13 @@ class Database:
         unites_copy = "COPY unites (id, name, code, branch) FROM STDIN"
 
         with self.cursor.copy(unites_copy) as copy:
+            seen = set()
             for unite in unites:
+                if unite.code in seen:
+                    continue
+
+                seen.add(unite.code)
+
                 data = (unite.id, unite.name, unite.code, unite.branch)
                 copy.write_row(data)
 
@@ -117,13 +123,20 @@ class Database:
 
          :param events: list of unites to be added
          """
-        events_copy = "COPY events (id, activity_id, name, start_at, end_at, unite_id) FROM STDIN"
+        events_copy = "COPY events (id, activity_id, name, start_at, end_at, unite_id, trainees) FROM STDIN"
 
         # we populate the "events" table with the specific data
         with self.cursor.copy(events_copy) as copy:
             for event in events:
-                data = (event.id, event.activity_id, event.name, event.start_at, event.end_at,
-                        getattr(event.unite, "id", None))
+                data = (
+                    event.id,
+                    event.activity_id,
+                    event.name,
+                    event.start_at,
+                    event.end_at,
+                    getattr(event.unite, "id", None),
+                    event.trainees
+                )
                 copy.write_row(data)
 
         # then we introduce the relation to the others data
@@ -194,7 +207,8 @@ class Database:
         """
         Clean existing tables in the database.
         """
-        truncate_sql = "TRUNCATE classrooms, events, events_classrooms, events_instructors, instructors, unites"
+        truncate_sql = "TRUNCATE classrooms, events, events_classrooms, events_instructors, instructors, unites, " \
+                       "groups, users"
 
         self.cursor.execute(truncate_sql)
 

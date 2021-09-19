@@ -37,7 +37,7 @@ class AurionClient:
         self.password = password
         self.database = database
 
-    def retrieve_unites(self) -> list[Unite]:
+    def get_unites(self) -> list[Unite]:
         """
         Extract the name of the units with the associated code
 
@@ -57,6 +57,30 @@ class AurionClient:
 
         return unites
 
+    def get_users_groups(self) -> None:
+        data = self._send(18152763)
+
+        for row in data.iter(tag="row"):
+            login = row.find("login.Individu").text
+            email = row.find("Coordonnée.Coordonnée").text
+            payload = row.find("Code.Groupe").text
+
+            # the payload is under the following shape
+            # YEAR_LEVEL_NAME_CODE_GROUP
+
+            # TODO the form "YEAR_LEVEL_MAJOR" can exist too
+
+            parts = payload.split("_")
+            if len(parts) <= 3:
+                continue
+
+            group = parts[-1]
+            code = parts[2:4]
+
+            if email == "louis.desplanche@edu.esiee.fr":
+                print(payload)
+                print(f"{login} fait {code} en appartenant au groupe {group}")
+
     def _send(self, request_id) -> ET.Element:
         """
         Execute a specific request
@@ -66,7 +90,8 @@ class AurionClient:
         """
         payload = """
             <executeFavori>
-                <favori><id>{request_id}</id></favori><database>{database}</database>
+                <favori><id>{request_id}</id></favori>
+                <database>{database}</database>
             </executeFavori>
         """
 

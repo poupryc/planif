@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 from xml.etree.ElementTree import Element
 
 import arrow
@@ -150,6 +150,7 @@ class Event:
     unite: Optional[Unite] = field(default=None)
     instructors: list[Instructor] = field(default_factory=list)
     classrooms: list[Classroom] = field(default_factory=list)
+    trainees: List[str] = field(default_factory=list)
 
     @classmethod
     def from_element(cls, element: Element) -> "Event":
@@ -185,6 +186,8 @@ class Event:
                 event.instructors.append(Instructor.from_element(resource))
             elif category == Category.UNITE:
                 event.unite = Unite.from_element(resource)
+            elif category == Category.TRAINEE:
+                event.trainees.append(resource.get("name"))
 
         return event
 

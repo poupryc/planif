@@ -40,7 +40,7 @@ print("> Fetching activities from ADE... (3/3)", end="\n\n")
 raw_activities = ade.get_activities()
 
 print("> Fetching unite data from Aurion... (1/2)", end="\n\n")
-aurion_unites = aurion.retrieve_unites()
+aurion_unites = aurion.get_unites()
 
 print("> Analyzing resources...")
 classrooms = []

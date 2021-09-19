@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS unites
 (
     id     INTEGER PRIMARY KEY,
     name   TEXT NOT NULL,
-    code   TEXT NOT NULL,
+    code   TEXT UNIQUE NOT NULL,
     label  TEXT,
     branch TEXT NOT NULL
 );
@@ -28,10 +28,11 @@ CREATE TABLE IF NOT EXISTS events
     name        TEXT                     NOT NULL,
     description TEXT,
     category    TEXT,
-    INFO        TEXT,
+    info        TEXT,
     start_at    TIMESTAMP WITH TIME ZONE NOT NULL,
     end_at      TIMESTAMP WITH TIME ZONE NOT NULL,
-    unite_id    INTEGER REFERENCES unites (id)
+    unite_id    INTEGER REFERENCES unites (id),
+    trainees    TEXT[] DEFAULT '{}'
 );
 
 CREATE TABLE IF NOT EXISTS events_classrooms
@@ -46,6 +47,19 @@ CREATE TABLE IF NOT EXISTS events_instructors
     event_id      INTEGER REFERENCES events (id),
     instructor_id INTEGER REFERENCES instructors (id),
     PRIMARY KEY (event_id, instructor_id)
+);
+
+CREATE TABLE IF NOT EXISTS users
+(
+    login   TEXT PRIMARY KEY NOT NULL,
+    email   TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS groups
+(
+    user_login TEXT REFERENCES users (login),
+    unite_code TEXT REFERENCES unites (code),
+    trainee TEXT
 );
 
 -- DO NOT EXECUTE
